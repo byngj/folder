@@ -21,7 +21,7 @@ from utils import resnet18, IMBALANCECIFAR10, IMBALANCECIFAR100, compute_accurac
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
-parser = parseargs.ArgumentParser(description='Dataset and Model Setting')
+parser = argparse.ArgumentParser(description='Dataset and Model Setting')
 parser.add_argument('--dataset', choices=['CIFAR10', 'CIFAR100'])
 parser.add_argument('--type', choices=['exp', 'step'])
 parser.add_argument('--factor', choices=[1e-1, 1e-2])
@@ -52,22 +52,6 @@ transform_test = transforms.Compose([
 ])
 
 
-
-class ResNet18(nn.Module):
-    def __init__(self, num_classes):
-        super(ResNet18, self).__init__()
-        self.backbone = resnet18()
-        self.classifier = nn.Linear(512, num_classes)
-    
-    def forward(self, x):
-        batch_size = x.shape[0]
-        x = self.backbone(x)
-        x = F.adaptive_max_pool2d(x, 1)
-        x = x.view(batch_size, -1)
-        pred = self.classifier(x)
-        return pred
-    
-    
 def main() :
     args = parser.parse_args()
     DATASET = args.dataset
@@ -82,6 +66,22 @@ def main() :
     
     os.makedirs(osp.join(SAVE_DIR), exist_ok=True)
     experiment_CE(DATASET, IMB_TYPE, IMB_FACTOR, SAVE_DIR, LR, BATCH_SIZE, MOMENTUM, WEIGHT_DECAY, EPOCHS)
+
+
+
+class ResNet18(nn.Module):
+    def __init__(self, num_classes):
+        super(ResNet18, self).__init__()
+        self.backbone = resnet18()
+        self.classifier = nn.Linear(512, num_classes)
+    
+    def forward(self, x):
+        batch_size = x.shape[0]
+        x = self.backbone(x)
+        x = F.adaptive_max_pool2d(x, 1)
+        x = x.view(batch_size, -1)
+        pred = self.classifier(x)
+        return pred
     
     
     
